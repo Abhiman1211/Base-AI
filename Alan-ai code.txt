@@ -1,0 +1,70 @@
+const shoppingItems = [
+  { name: "T-shirt", price: 1500, category: "T-shirt" },
+  { name: "Shoes", price: 5000, category: "Shoes" },
+  { name: "Watch", price: 10000, category: "Watch" },
+  { name: "Mobile", price: 15000, category: "Mobile" },
+  { name: "Laptop", price: 50000, category: "Laptop" },
+  { name: "Headphone", price: 1500, category: "Headphone" },
+  { name: "Earrings", price: 500, category: "Earrings" },
+  { name: "Necklace", price: 1000, category: "Necklace" },
+  { name: "Ring", price: 1500, category: "Ring" },
+  { name: "Bracelet", price: 500, category: "Bracelet" },
+  { name: "Bangles", price: 1000, category: "Bangles" },
+  { name: "Sunglasses", price: 1500, category: "Sunglasses" },
+  { name: "Perfume", price: 500, category: "Perfume" },
+];
+
+intent('show me the list', p => {
+  p.play({ command: 'loadShoppingItems', data: shoppingItems });
+  p.play("Here's the shopping list");
+});
+
+intent('order by $(ORDER_BY name|price|category)', p => {
+    p.play(`Ordering by ${p.ORDER_BY.value}`);
+    
+    const orderByField = p.ORDER_BY.value;
+    let orderedShoppingItems = shoppingItems;
+    switch(orderByField){
+        case 'name' :
+            orderedShoppingItems = shoppingItems.sort((p1, p2) => p1.name.localeCompare(p2.name));
+            break;
+        case 'category' :
+            orderedShoppingItems = shoppingItems.sort((p1, p2) => p1.category.localeCompare(p2.category));
+            break;
+        case 'price' :
+            orderedShoppingItems = shoppingItems.sort((p1, p2) => p1.price - p2.price);
+            break;   
+                    
+    }
+    
+    p.play({command: 'loadShoppingItems' , data: orderedShoppingItems});
+    p.play(`Ordering by ${p.ORDER_BY.value}`);
+    
+});
+
+const shoppingItemsSlotList = shoppingItems.map(item => item.name).join("|");
+ 
+
+intent(`Add $(ITEM ${shoppingItemsSlotList}) to the cart`, 
+      'Add $(UNAVAILABLE_ITEM* .*) to the cart', 
+       p => {
+    
+   
+    
+    if(p.UNAVAILABLE_ITEM){
+        p.play(`The item is unavailable`);
+    }
+    else{
+        const itemName = p.ITEM.value;
+        const itemToGoInCart = shoppingItems.find((shoppingItem) => {
+        return shoppingItem.name.toLowerCase() === itemName.toLowerCase();
+        
+    });
+      p.play({command: 'addToCart' , data: itemToGoInCart});
+      p.play(`Adding ${p.ITEM.value} to the cart`);  
+    }
+        
+    
+});
+
+
